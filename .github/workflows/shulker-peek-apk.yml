@@ -46,8 +46,9 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/gradle"
           curl --fail --location --retry 6 --retry-all-errors --retry-delay 5 \
-            https://downloads.gradle.org/distributions/gradle-8.14-bin.zip \
+            https://github.com/gradle/gradle-distributions/releases/download/v8.14.0/gradle-8.14-bin.zip \
             --output "$RUNNER_TEMP/gradle/gradle-8.14-bin.zip"
+          echo "61ad310d3c7d3e5da131b76bbf22b5a4c0786e9d892dae8c1658d4b484de3caa  $RUNNER_TEMP/gradle/gradle-8.14-bin.zip" | sha256sum --check
           unzip -q "$RUNNER_TEMP/gradle/gradle-8.14-bin.zip" -d "$RUNNER_TEMP/gradle"
           echo "$RUNNER_TEMP/gradle/gradle-8.14/bin" >> "$GITHUB_PATH"
       - name: Install Android and Rust toolchains
