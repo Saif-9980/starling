@@ -200,7 +200,7 @@ pub(super) fn native_tooltip_component(
     stack: &horizon_client::items::ItemStack,
     size: &mut Option<[f32; 2]>,
 ) {
-    let _ = (game, stack, size);
+    let _ = (game, stack, &mut *size);
     #[cfg(target_os = "android")]
     if stack.item.ends_with("_shulker_box") {
         *size = Some([162.0, 54.0]);
@@ -215,7 +215,7 @@ pub(super) fn native_tooltip_component_draw(
     origin: [f32; 2],
     size: [f32; 2],
 ) {
-    let _ = (game, stack, batch, origin, size);
+    let _ = (game, stack, &mut *batch, origin, size);
     #[cfg(target_os = "android")]
     {
         if !stack.item.ends_with("_shulker_box") {
