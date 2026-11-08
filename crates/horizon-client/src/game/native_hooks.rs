@@ -1991,7 +1991,7 @@ impl Game<'_> {
     /// in GUI pixels; finite positive dimensions reserve space after text and any
     /// vanilla bundle component. None keeps the vanilla tooltip unchanged.
     pub(super) fn native_tooltip_component(&self, stack: &ItemStack, size: &mut Option<[f32; 2]>) {
-        let _ = (stack, size);
+        super::android_bundled::native_tooltip_component(self, stack, size);
     }
     /// Render the measured component at origin, inside the tooltip background.
     /// Stack is the component's data. Use native_sprite/native_fill/native_text;
@@ -2003,7 +2003,7 @@ impl Game<'_> {
         origin: [f32; 2],
         size: [f32; 2],
     ) {
-        let _ = (stack, batch, origin, size);
+        super::android_bundled::native_tooltip_component_draw(self, stack, batch, origin, size);
     }
 
     /// The small bar `GuiGraphicsExtractor.itemDecorations` draws under an
