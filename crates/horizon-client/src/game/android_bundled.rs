@@ -193,6 +193,61 @@ pub(super) fn native_command(game: &mut Game<'_>, command: &str, ran: &mut bool)
     }
 }
 
+/// Shulker Peek's tooltip component. The tooltip system reserves a 9x3 slot grid
+/// after the item's text; only Android draws it in this bundled client.
+pub(super) fn native_tooltip_component(
+    game: &Game<'_>,
+    stack: &horizon_client::items::ItemStack,
+    size: &mut Option<[f32; 2]>,
+) {
+    let _ = (game, stack, size);
+    #[cfg(target_os = "android")]
+    if stack.item.ends_with("_shulker_box") {
+        *size = Some([162.0, 54.0]);
+    }
+}
+
+/// Draw the 27 contents slots using the same item-model renderer as inventory icons.
+pub(super) fn native_tooltip_component_draw(
+    game: &Game<'_>,
+    stack: &horizon_client::items::ItemStack,
+    batch: &mut horizon_client::hud::HudBatch,
+    origin: [f32; 2],
+    size: [f32; 2],
+) {
+    let _ = (game, stack, batch, origin, size);
+    #[cfg(target_os = "android")]
+    {
+        if !stack.item.ends_with("_shulker_box") {
+            return;
+        }
+        // Draw all 27 slots, including empty ones, so empty shulkers have the
+        // same preview dimensions and layout as filled boxes.
+        for slot in 0..27 {
+            let x = origin[0] + (slot % 9) as f32 * 18.0;
+            let y = origin[1] + (slot / 9) as f32 * 18.0;
+            game.native_fill(batch, [x, y, 18.0, 18.0], 0x80505050);
+            game.native_fill(batch, [x + 1.0, y + 1.0, 16.0, 16.0], 0x80303030);
+        }
+        if let Some(data) = stack.data() {
+            for (slot, item) in &data.container {
+                let index = usize::from(*slot);
+                if index >= 27 {
+                    continue;
+                }
+                let x = origin[0] + (index % 9) as f32 * 18.0 + 1.0;
+                let y = origin[1] + (index / 9) as f32 * 18.0 + 1.0;
+                game.draw_item_model(batch, item, x, y);
+                if item.count > 1 {
+                    let count = item.count.to_string();
+                    let text_x = x + 16.0 - game.native_text_width(&count);
+                    game.native_text(batch, &count, [text_x, y + 8.0], 0xFFFFFF, true);
+                }
+            }
+        }
+    }
+}
+
 #[cfg(target_os = "android")]
 pub(super) fn reset() {
     official_zoom::reset();
