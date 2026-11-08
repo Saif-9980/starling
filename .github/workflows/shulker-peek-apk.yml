@@ -2,6 +2,7 @@ name: Shulker Peek Android test APK
 run-name: Shulker Peek test · ${{ github.sha }}
 
 on:
+  workflow_dispatch:
   push:
     branches: [shulker-peek-android]
     paths:
