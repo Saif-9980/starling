@@ -229,6 +229,10 @@ mod mobile_vulkan_tests {
             "PowerVR GE8320",
             wgpu::Backend::Vulkan
         )));
+        assert!(!for_vanilla(&adapter(
+            "PowerVR GE8320",
+            wgpu::Backend::Vulkan
+        )));
         assert!(is_broken_mobile_vulkan(&adapter(
             "Mali-G57",
             wgpu::Backend::Vulkan
