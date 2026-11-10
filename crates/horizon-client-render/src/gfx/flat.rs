@@ -174,7 +174,9 @@ pub fn is_broken_mobile_vulkan(info: &wgpu::AdapterInfo) -> bool {
     }
     let name = info.name.to_ascii_lowercase();
     if name.contains("adreno")
-        && ["506", "610", "612", "615", "616"].iter().any(|model| name.contains(model))
+        && ["506", "610", "612", "615", "616"]
+            .iter()
+            .any(|model| name.contains(model))
     {
         return true;
     }
@@ -217,12 +219,30 @@ mod mobile_vulkan_tests {
 
     #[test]
     fn flags_power_vr_and_other_affected_mobile_vulkan_gpus() {
-        assert!(is_broken_mobile_vulkan(&adapter("PowerVR GE8320", wgpu::Backend::Vulkan)));
-        assert!(is_broken_mobile_vulkan(&adapter("Mali-G57", wgpu::Backend::Vulkan)));
-        assert!(is_broken_mobile_vulkan(&adapter("Immortalis-G720", wgpu::Backend::Vulkan)));
-        assert!(is_broken_mobile_vulkan(&adapter("Adreno (TM) 610", wgpu::Backend::Vulkan)));
-        assert!(!is_broken_mobile_vulkan(&adapter("Adreno (TM) 740", wgpu::Backend::Vulkan)));
-        assert!(!is_broken_mobile_vulkan(&adapter("PowerVR GE8320", wgpu::Backend::Gl)));
+        assert!(is_broken_mobile_vulkan(&adapter(
+            "PowerVR GE8320",
+            wgpu::Backend::Vulkan
+        )));
+        assert!(is_broken_mobile_vulkan(&adapter(
+            "Mali-G57",
+            wgpu::Backend::Vulkan
+        )));
+        assert!(is_broken_mobile_vulkan(&adapter(
+            "Immortalis-G720",
+            wgpu::Backend::Vulkan
+        )));
+        assert!(is_broken_mobile_vulkan(&adapter(
+            "Adreno (TM) 610",
+            wgpu::Backend::Vulkan
+        )));
+        assert!(!is_broken_mobile_vulkan(&adapter(
+            "Adreno (TM) 740",
+            wgpu::Backend::Vulkan
+        )));
+        assert!(!is_broken_mobile_vulkan(&adapter(
+            "PowerVR GE8320",
+            wgpu::Backend::Gl
+        )));
     }
 }
 
