@@ -222,7 +222,7 @@ mod mobile_vulkan_tests {
         assert!(is_broken_mobile_vulkan(&adapter("Immortalis-G720", wgpu::Backend::Vulkan)));
         assert!(is_broken_mobile_vulkan(&adapter("Adreno (TM) 610", wgpu::Backend::Vulkan)));
         assert!(!is_broken_mobile_vulkan(&adapter("Adreno (TM) 740", wgpu::Backend::Vulkan)));
-        assert!(!is_broken_mobile_vulkan(&adapter("PowerVR GE8320", wgpu::Backend::Gles)));
+        assert!(!is_broken_mobile_vulkan(&adapter("PowerVR GE8320", wgpu::Backend::Gl)));
     }
 }
 
