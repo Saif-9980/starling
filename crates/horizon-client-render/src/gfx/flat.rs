@@ -154,7 +154,31 @@ pub const MIN_SECTIONS: usize = 1600;
 /// `mc_Entity`; frames without one draw flat only where `for_vanilla` says.
 /// `HORIZON_FLAT_DRAWS=1` draws every frame flat, `0` none.
 pub fn wanted(adapter: &wgpu::Adapter, device: &wgpu::Device) -> bool {
+    let info = adapter.get_info();
+    // PowerVR, Mali and Immortalis are tile-based mobile GPUs. The flat terrain
+    // path performs dependent storage-buffer reads in the vertex shader, which
+    // can cause severe memory stalls on these GPUs in ordinary 3D worlds.
+    // Keep the standard per-section draw path on affected Android Vulkan devices.
+    if cfg!(target_os = "android") && is_broken_mobile_vulkan(&info) {
+        return false;
+    }
     std::env::var("HORIZON_FLAT_DRAWS").as_deref() != Ok("0") && supported(adapter, device)
+}
+
+/// Mobile Vulkan GPUs on which flat terrain draws are known to be unsafe or
+/// disproportionately slow. The PowerVR GE8320 in the Samsung Galaxy A04 is
+/// included by the PowerVR vendor name reported by wgpu.
+pub fn is_broken_mobile_vulkan(info: &wgpu::AdapterInfo) -> bool {
+    if info.backend != wgpu::Backend::Vulkan {
+        return false;
+    }
+    let name = info.name.to_ascii_lowercase();
+    if name.contains("adreno")
+        && ["506", "610", "612", "615", "616"].iter().any(|model| name.contains(model))
+    {
+        return true;
+    }
+    name.contains("mali") || name.contains("immortalis") || name.contains("powervr")
 }
 
 /// Whether frames without a shader pack's terrain draw flat: where the backend
@@ -170,6 +194,38 @@ pub fn for_vanilla(info: &wgpu::AdapterInfo) -> bool {
 /// Raptor Lake) ANV Vulkan drivers have broken `first_instance` for
 /// instance-step vertex attributes (#3529, #4599), causing terrain sections to
 /// be drawn with another section's origin and flicker.
+#[cfg(test)]
+mod mobile_vulkan_tests {
+    use super::*;
+
+    fn adapter(name: &str, backend: wgpu::Backend) -> wgpu::AdapterInfo {
+        wgpu::AdapterInfo {
+            name: name.into(),
+            vendor: 0,
+            device: 0,
+            device_type: wgpu::DeviceType::IntegratedGpu,
+            device_pci_bus_id: String::new(),
+            driver: String::new(),
+            driver_info: String::new(),
+            backend,
+            subgroup_min_size: 0,
+            subgroup_max_size: 0,
+            transient_saves_memory: None,
+            limit_bucket: None,
+        }
+    }
+
+    #[test]
+    fn flags_power_vr_and_other_affected_mobile_vulkan_gpus() {
+        assert!(is_broken_mobile_vulkan(&adapter("PowerVR GE8320", wgpu::Backend::Vulkan)));
+        assert!(is_broken_mobile_vulkan(&adapter("Mali-G57", wgpu::Backend::Vulkan)));
+        assert!(is_broken_mobile_vulkan(&adapter("Immortalis-G720", wgpu::Backend::Vulkan)));
+        assert!(is_broken_mobile_vulkan(&adapter("Adreno (TM) 610", wgpu::Backend::Vulkan)));
+        assert!(!is_broken_mobile_vulkan(&adapter("Adreno (TM) 740", wgpu::Backend::Vulkan)));
+        assert!(!is_broken_mobile_vulkan(&adapter("PowerVR GE8320", wgpu::Backend::Gles)));
+    }
+}
+
 pub fn is_broken_intel_vulkan(info: &wgpu::AdapterInfo) -> bool {
     info.backend == wgpu::Backend::Vulkan
         && info.vendor == 0x8086
