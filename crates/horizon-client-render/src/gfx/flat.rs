@@ -187,6 +187,12 @@ pub fn is_broken_mobile_vulkan(info: &wgpu::AdapterInfo) -> bool {
 /// emulates multi-draw (Metal, past `MIN_SECTIONS`), on Intel Gen11/Gen12's Vulkan
 /// driver, or with `HORIZON_FLAT_DRAWS=1`. Elsewhere per-section draws stay.
 pub fn for_vanilla(info: &wgpu::AdapterInfo) -> bool {
+    // Keep vanilla terrain on the per-section path too. The guard in wanted
+    // covers shader-pack flat draws; this function independently selects
+    // flat draws for vanilla frames.
+    if is_broken_mobile_vulkan(info) {
+        return false;
+    }
     std::env::var("HORIZON_FLAT_DRAWS").as_deref() == Ok("1")
         || info.backend == wgpu::Backend::Metal
         || is_broken_intel_vulkan(info)
